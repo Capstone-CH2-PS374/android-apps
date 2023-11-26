@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">RelaOne</string>
+    <string name="participant">Participant\t\t</string>
+    <string name="about_event">About Event</string>
+</resources>
