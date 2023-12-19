@@ -1,4 +1,4 @@
-package com.capstone_ch2_ps374.realone.ui.theme
+package com.capstone_ch2_ps374.realone.presentation.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

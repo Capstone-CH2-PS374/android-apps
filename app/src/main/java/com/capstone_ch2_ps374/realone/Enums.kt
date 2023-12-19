@@ -7,3 +7,7 @@ enum class TextFieldType{
 enum class DetailEventCardType{
     ABOUT, PARTICIPANT
 }
+
+enum class CardPresenceType {
+    NORMAL, LATE, PRESENT
+}
