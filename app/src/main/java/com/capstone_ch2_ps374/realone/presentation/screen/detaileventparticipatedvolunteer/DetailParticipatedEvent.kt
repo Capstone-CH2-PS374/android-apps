@@ -48,7 +48,6 @@ import com.capstone_ch2_ps374.realone.presentation.component.CardPresence
 import com.capstone_ch2_ps374.realone.presentation.theme.Typography
 import java.io.File
 
-@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun DetailEventParticipatedVolunteerScreen(
     navigateToPresent: (String, String) -> Unit,
@@ -104,13 +103,13 @@ fun DetailEventParticipatedVolunteerScreen(
                 )
                 .padding(30.dp)
         ) {
-            CardPresence(type = CardPresenceType.LATE, date = "12", month = "Desember")
-            Spacer(modifier = Modifier.width(20.dp))
-            CardPresence(type = CardPresenceType.LATE, date = "12", month = "Desember")
-            Spacer(modifier = Modifier.width(20.dp))
-            CardPresence(type = CardPresenceType.LATE, date = "12", month = "Desember")
-            Spacer(modifier = Modifier.width(20.dp))
             CardPresence(type = CardPresenceType.PRESENT, date = "12", month = "Desember")
+            Spacer(modifier = Modifier.width(20.dp))
+            CardPresence(type = CardPresenceType.PRESENT, date = "13", month = "Desember")
+            Spacer(modifier = Modifier.width(20.dp))
+            CardPresence(type = CardPresenceType.PRESENT, date = "14", month = "Desember")
+            Spacer(modifier = Modifier.width(20.dp))
+            CardPresence(type = CardPresenceType.PRESENT, date = "15", month = "Desember")
             Spacer(modifier = Modifier.width(20.dp))
             CardPresence(
                 type = CardPresenceType.NORMAL,

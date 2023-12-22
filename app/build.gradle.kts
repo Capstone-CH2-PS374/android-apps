@@ -7,6 +7,8 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+
+
 android {
     namespace = "com.capstone_ch2_ps374.realone"
     compileSdk = 34
@@ -62,7 +64,7 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material3:material3:1.2.0-beta01")
     implementation("androidx.compose.material:material-icons-extended:1.5.4")
 
     // Import the Firebase BoM
@@ -90,6 +92,14 @@ dependencies {
 //    kapt ("androidx.hilt:hilt-compiler:1.0.0")
 //    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 
+    //retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.6.1")
+    implementation("com.squareup.retrofit2:converter-gson:2.6.1")
+
+    //okHttp
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+
     //QrScanner Related
     // CameraX
     implementation("androidx.camera:camera-camera2:1.0.2")
@@ -98,6 +108,10 @@ dependencies {
 
     // Zxing
     implementation("com.google.zxing:core:3.3.3")
+
+    //custom stepper
+    implementation("com.github.maryamrzdh:compose-stepper:1.0.0-beta01")
+
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

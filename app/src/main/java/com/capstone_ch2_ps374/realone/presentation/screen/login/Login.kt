@@ -88,14 +88,27 @@ fun LoginScreen(
     LaunchedEffect(pagerState.currentPage) {
         selectedTabIndex = pagerState.currentPage
     }
-    LaunchedEffect(stateSignIn.isSignInSuccessful) {
+    LaunchedEffect(key1 = stateSignIn.isSignInSuccessful, key2 = stateSignIn.signInError) {
         if (stateSignIn.isSignInSuccessful) {
             Toast.makeText(
                 context,
                 "Login Berhasil",
                 Toast.LENGTH_SHORT
             ).show()
-            navController.navigate(Screen.VolunteerLayout.route)
+            viewModel.resetState()
+            if (stateSignIn.isOrg) {
+                navController.navigate(Screen.OrganizationHome.route)
+            }else{
+                navController.navigate(Screen.VolunteerLayout.route)
+            }
+        }
+        if (stateSignIn.signInError != null){
+            Toast.makeText(
+                context,
+                "Login Gagal",
+                Toast.LENGTH_SHORT
+            ).show()
+            viewModel.resetState()
         }
     }
     if (isLoading || stateSignIn.isLoading) {
@@ -216,11 +229,11 @@ fun OrganizationLoginScreen(
 //        }
             Spacer(modifier = Modifier.height(30.dp))
             OutlinedTextField(
-                value = state.email,
+                value = state.orgEmail,
                 onValueChange = {
-                    viewModel.onEvent(LoginFormEvent.EmailChanged(it))
+                    viewModel.onEvent(LoginFormEvent.OrgEmailChanged(it))
                 },
-                isError = state.emailError != null,
+                isError = state.orgEmailError != null,
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
                     Text(text = "Email")
@@ -229,20 +242,20 @@ fun OrganizationLoginScreen(
                     keyboardType = KeyboardType.Email
                 )
             )
-            if (state.emailError != null) {
+            if (state.orgEmailError != null) {
                 Text(
-                    text = state.emailError,
+                    text = state.orgEmailError,
                     color = md_theme_dark_error,
                     modifier = Modifier.align(Alignment.End)
                 )
             }
             Spacer(modifier = Modifier.height(30.dp))
             OutlinedTextField(
-                value = state.password,
+                value = state.orgPassword,
                 onValueChange = {
-                    viewModel.onEvent(LoginFormEvent.PasswordChanged(it))
+                    viewModel.onEvent(LoginFormEvent.OrgPasswordChanged(it))
                 },
-                isError = state.passwordError != null,
+                isError = state.orgPasswordError != null,
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
                     Text(text = "Password")
@@ -252,9 +265,9 @@ fun OrganizationLoginScreen(
                 ),
                 visualTransformation = PasswordVisualTransformation()
             )
-            if (state.passwordError != null) {
+            if (state.orgPasswordError != null) {
                 Text(
-                    text = state.passwordError,
+                    text = state.orgPasswordError,
                     color = md_theme_dark_error,
                     modifier = Modifier.align(Alignment.End)
                 )
@@ -274,7 +287,7 @@ fun OrganizationLoginScreen(
             FullSizeButton(
                 text = "Masuk",
                 onClick = {
-                          navController.navigate(Screen.OrgGenerateQR.route)
+                    viewModel.onEvent(LoginFormEvent.SubmitOrg)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -306,6 +319,8 @@ fun VolunteeLoginScreen(
                         Toast.LENGTH_LONG
                     ).show()
                 }
+
+                else -> {}
             }
         }
     }

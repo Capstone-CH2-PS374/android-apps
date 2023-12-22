@@ -98,7 +98,7 @@ fun VolunteerLayout(signedInUser: UserData?, logoutOnClick: () -> Unit, mainNavH
             NavHost(navController = navHostController, startDestination = "Home") {
                 composable("Home") {
                     HomeVolunteerScreen(userData = signedInUser!!, viewModel = hiltViewModel(), navigateTodetail = {
-                        mainNavHostController.navigate(Screen.VolunteerDetailEvent.createRoute("1"))
+                        mainNavHostController.navigate(Screen.VolunteerDetailEvent.createRoute(it))
                     })
                 }
                 composable("Event") {

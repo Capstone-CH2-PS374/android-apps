@@ -4,6 +4,7 @@ import android.app.Activity.RESULT_CANCELED
 import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -21,13 +22,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.capstone_ch2_ps374.realone.api.UserResponse
 import com.capstone_ch2_ps374.realone.navigation.Screen
 import com.capstone_ch2_ps374.realone.presentation.screen.login.LoginScreen
 import com.capstone_ch2_ps374.realone.presentation.screen.login.SignInResult
@@ -36,14 +37,18 @@ import com.capstone_ch2_ps374.realone.presentation.screen.volunteelayout.Volunte
 import com.capstone_ch2_ps374.realone.presentation.screen.volunteerregister.RegisterViewModel
 import com.capstone_ch2_ps374.realone.presentation.screen.volunteerregister.VolunteerRegisterScreen
 import com.capstone_ch2_ps374.realone.domain.usecase.GoogleAuthUiClient
+import com.capstone_ch2_ps374.realone.presentation.screen.AddEvent.AddEventForm
 import com.capstone_ch2_ps374.realone.presentation.screen.detaileventvolunteer.DetailEventVolunteerScreen
 import com.capstone_ch2_ps374.realone.presentation.screen.confirmeventform.ConfirmEventScreen
 import com.capstone_ch2_ps374.realone.presentation.screen.detaileventparticipatedvolunteer.DetailEventParticipatedVolunteerScreen
 import com.capstone_ch2_ps374.realone.presentation.screen.generateqrscreen.GenerateQRScreen
+import com.capstone_ch2_ps374.realone.presentation.screen.organizationhome.OrganizationHomeScreen
+import com.capstone_ch2_ps374.realone.presentation.screen.volunteerdataform.VolunteerForm
 import com.capstone_ch2_ps374.realone.presentation.screen.volunteerpresence.VolunteerPresence
 import com.example.compose.RelaOneTheme
 import com.google.android.gms.auth.api.identity.Identity
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 
@@ -86,12 +91,29 @@ fun MyApp(
 ) {
     NavHost(navController = navHostController, startDestination = Screen.Login.route) {
         composable(Screen.Login.route) {
-            val viewModel = viewModel<SignInViewModel>()
+            val viewModel: SignInViewModel = hiltViewModel()
             val state by viewModel.state.collectAsStateWithLifecycle()
 
-            LaunchedEffect(key1 = Unit) {
+            LaunchedEffect(key1 = Unit, key2 = state.userDataApi) {
+
                 if (googleAuthUiClient.getSignedInUser() != null) {
-                    navHostController.navigate("volunteer")
+                    Log.d("TAG", "${googleAuthUiClient.getSignedInUser()}")
+                    var userDataApi: UserResponse? = null
+                    val userDataApiPro = async {
+                        viewModel.fetchUserData(
+                            googleAuthUiClient.getSignedInUser()!!.userId
+                        )
+                        if (state.userDataApi?.userId != null) {
+                            if (state.userDataApi?.typeOrganization!!.isNotEmpty()) {
+                                navHostController.navigate(Screen.OrganizationHome.route)
+                            } else {
+                                navHostController.navigate(Screen.VolunteerLayout.route)
+                            }
+                        }
+                        if (state.userDataApi?.address == "error") {
+                            navHostController.navigate(Screen.VolunteerForm.route)
+                        }
+                    }
                 }
             }
 
@@ -121,12 +143,13 @@ fun MyApp(
                 if (state.isSignInSuccessful) {
                     Toast.makeText(
                         applicationContext,
-                        "Sign in successful",
+                        "login Berhasil",
                         Toast.LENGTH_LONG
                     ).show()
-
-                    navHostController.navigate("volunteer")
+                    viewModel.registApi(googleAuthUiClient.getSignedInUser()!!.userId)
+                    viewModel.fetchUserData(googleAuthUiClient.getSignedInUser()!!.userId)
                     viewModel.resetState()
+                    navHostController.navigate("volunteer")
                 }
 
                 if (state.signInError != null) {
@@ -198,6 +221,12 @@ fun MyApp(
                 navController = navHostController
             )
         }
+        composable(route = Screen.VolunteerForm.route) {
+            VolunteerForm(
+                userId = googleAuthUiClient.getSignedInUser(),
+                navController = navHostController,
+            )
+        }
         composable(
             route = Screen.VolunteerDetailEvent.route,
             arguments = listOf(navArgument("eventId") { type = NavType.StringType })
@@ -206,14 +235,24 @@ fun MyApp(
             if (id == "2") {
                 DetailEventParticipatedVolunteerScreen(
                     context = applicationContext,
-                    navigateToPresent = {eventId, presenceId ->
-                        navHostController.navigate(Screen.VolunteerParticipatePresence.createRoute(eventId,presenceId))
+                    navigateToPresent = { eventId, presenceId ->
+                        navHostController.navigate(
+                            Screen.VolunteerParticipatePresence.createRoute(
+                                eventId,
+                                presenceId
+                            )
+                        )
                     },
                 )
             } else {
                 DetailEventVolunteerScreen(
+                    id = id,
                     navigateToForm = {
-                        navHostController.navigate(Screen.VolunteerParticipateForm.createRoute(it))
+                        navHostController.navigate(
+                            Screen.VolunteerParticipateForm.createRoute(
+                                it
+                            )
+                        )
                     },
                     viewModel = hiltViewModel()
                 )
@@ -230,8 +269,27 @@ fun MyApp(
                 }
             )
         }
-        composable(Screen.OrgGenerateQR.route){
-            GenerateQRScreen()
+        composable(Screen.OrgGenerateQR.route) {
+            GenerateQRScreen(
+
+            )
+        }
+        composable(Screen.OrganizationHome.route) {
+            OrganizationHomeScreen(
+                navHostController,
+                logout = {
+                    lifecycleScope.launch {
+                        googleAuthUiClient.signOut()
+                        Toast.makeText(
+                            applicationContext,
+                            "Signed out",
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                        navHostController.popBackStack()
+                    }
+                }
+            )
         }
         composable(
             route = Screen.VolunteerParticipatePresence.route,
@@ -244,6 +302,9 @@ fun MyApp(
             val presenceId = it.arguments?.getString("presenceId")
             VolunteerPresence(
             )
+        }
+        composable(Screen.AddEventForm.route) {
+            AddEventForm()
         }
     }
 }

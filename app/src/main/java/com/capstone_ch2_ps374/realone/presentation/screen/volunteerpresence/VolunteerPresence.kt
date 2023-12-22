@@ -48,6 +48,11 @@ fun VolunteerPresence() {
     var code by remember {
         mutableStateOf("")
     }
+    
+    LaunchedEffect(key1 = code){
+
+    }
+    
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember {
@@ -72,7 +77,9 @@ fun VolunteerPresence() {
     }
     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier.fillMaxSize(). padding(horizontal = 30.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 30.dp),
             verticalArrangement = Arrangement.Center
         ) {
             Image(

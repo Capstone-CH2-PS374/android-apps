@@ -1,12 +1,15 @@
 package com.capstone_ch2_ps374.realone.presentation.screen.login
 
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.capstone_ch2_ps374.realone.api.ApiService
 import com.capstone_ch2_ps374.realone.domain.usecase.ValidateEmail
 import com.capstone_ch2_ps374.realone.domain.usecase.ValidatePassword
+import com.capstone_ch2_ps374.realone.repositories.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -24,7 +27,8 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val validateEmail: ValidateEmail,
     private val validatePassword: ValidatePassword,
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SignInState())
@@ -42,7 +46,11 @@ class LoginViewModel @Inject constructor(
         _passwordVisible.value = !_passwordVisible.value
     }
 
-    suspend fun signInWithEmail(email: String, password: String): SignInResult {
+    suspend fun signInWithEmail(
+        email: String,
+        password: String,
+        isOrg: Boolean = false
+    ): SignInResult {
         _state.update {
             it.copy(
                 isLoading = true
@@ -50,6 +58,12 @@ class LoginViewModel @Inject constructor(
         }
         return try {
             val user = auth.signInWithEmailAndPassword(email, password).await().user
+            val userData = userRepository.getUserById(user!!.uid)
+            _state.update {
+                it.copy(
+                    isOrg = userData.typeOrganization!!.isNotEmpty()
+                )
+            }
             _state.update {
                 it.copy(
                     isLoading = false,
@@ -69,6 +83,12 @@ class LoginViewModel @Inject constructor(
         } catch (e: Exception) {
             e.printStackTrace()
             if (e is CancellationException) throw e
+            _state.update {
+                it.copy(
+                    isLoading = false,
+                    signInError = "Email atau password salah"
+                )
+            }
             SignInResult(
                 data = null,
                 errorMessage = e.message
@@ -86,11 +106,44 @@ class LoginViewModel @Inject constructor(
                 state = state.copy(password = event.password)
             }
 
+            is LoginFormEvent.OrgEmailChanged -> {
+                state = state.copy(orgEmail = event.email)
+            }
+
+            is LoginFormEvent.OrgPasswordChanged -> {
+                state = state.copy(orgPassword = event.password)
+            }
+
             is LoginFormEvent.Submit -> {
                 submitData()
             }
 
+            is LoginFormEvent.SubmitOrg -> {
+                submitOrgData()
+            }
+
             else -> {}
+        }
+    }
+
+    private fun submitOrgData() {
+        val orgEmailResult = validateEmail.execute(state.orgEmail)
+        val orgPasswordResult = validatePassword.execute(state.orgPassword)
+
+        val hasError = listOf(
+            orgEmailResult,
+            orgPasswordResult
+        ).any { !it.successful }
+
+        if (hasError) {
+            state = state.copy(
+                emailError = orgEmailResult.errorMessage,
+                passwordError = orgPasswordResult.errorMessage
+            )
+        } else {
+            viewModelScope.launch {
+                signInWithEmail(state.orgEmail, state.orgPassword, true)
+            }
         }
     }
 
@@ -111,9 +164,13 @@ class LoginViewModel @Inject constructor(
         } else {
             viewModelScope.launch {
                 validationEventChannel.send(ValidationEvent.Succes)
-                signInWithEmail(state.email,state.password)
+                signInWithEmail(state.email, state.password)
             }
         }
+    }
+
+    fun resetState() {
+        _state.update { SignInState() }
     }
 
     sealed class ValidationEvent {

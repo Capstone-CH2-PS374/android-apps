@@ -12,6 +12,12 @@ sealed class Screen(val route: String) {
         fun createRoute(eventId: String) = "volunteer/participate/$eventId"
     }
 
+    object VolunteerForm : Screen("volunteer/form")
+
+    object AddEventForm : Screen("organization/form")
+
+    object OrganizationHome : Screen("organization/home")
+
     object VolunteerParticipatePresence : Screen("volunteer/participate/{eventId}/{presenceId}") {
         fun createRoute(eventId: String, presenceId: String) = "volunteer/participate/$eventId/$presenceId"
     }

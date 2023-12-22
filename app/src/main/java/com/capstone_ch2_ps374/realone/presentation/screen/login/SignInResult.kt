@@ -5,7 +5,8 @@ data class SignInResult(
     val errorMessage: String? = null
 )
 
-data class UserData(
+data class
+UserData(
     val userId: String,
     val username: String?,
     val profilePictureUrl: String?

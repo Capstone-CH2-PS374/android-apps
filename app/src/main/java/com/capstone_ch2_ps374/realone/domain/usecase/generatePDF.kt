@@ -30,18 +30,11 @@ fun generatePDF(context: Context) {
         ?.let { drawableToBitmap(it) }
     val bitmapBackground: Bitmap? = context.getDrawable(R.drawable.background_certificate)
         ?.let { drawableToBitmap(it) }
-    val scaleBitmap: Bitmap? = Bitmap.createScaledBitmap(bitmap!!, 31, 23, true)
     canvas.drawBitmap(bitmapBackground!!, 0f, 0f, paint)
-//    title.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-//    title.textSize = 15f
-//    title.color = ContextCompat.getColor(context, R.color.purple_200)
-//    canvas.drawText("Jetpack Compose", 400f, 100f, title)
-//    canvas.drawText("Make it Easy", 400f, 80f, title)
-//    title.typeface = Typeface.defaultFromStyle(Typeface.NORMAL)
-//    title.color = ContextCompat.getColor(context, R.color.purple_200)
-//    title.textSize = 15f
-//    title.textAlign = Paint.Align.CENTER
-//    canvas.drawText("This is sample document which we have created.", 396f, 560f, title)
+    title.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+    title.textSize = 200f
+    title.color = ContextCompat.getColor(context, R.color.black)
+    canvas.drawText("Nama Event", 1800f, 1200f, title)
     pdfDocument.finishPage(myPage)
     val file = File("${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_DOWNLOADS}", "serti.pdf")
 

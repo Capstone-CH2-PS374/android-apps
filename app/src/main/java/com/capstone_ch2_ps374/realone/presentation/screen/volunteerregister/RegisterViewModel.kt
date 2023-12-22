@@ -8,6 +8,7 @@ import com.capstone_ch2_ps374.realone.domain.usecase.ValidateRepeatedPassword
 import com.capstone_ch2_ps374.realone.presentation.screen.login.LoginViewModel
 import com.capstone_ch2_ps374.realone.presentation.screen.login.SignInResult
 import com.capstone_ch2_ps374.realone.presentation.screen.login.UserData
+import com.capstone_ch2_ps374.realone.repositories.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseUser
@@ -29,7 +30,8 @@ class RegisterViewModel @Inject constructor(
     private val validateEmail: ValidateEmail,
     private val validatePassword: ValidatePassword,
     private val validateRepeatedPassword: ValidateRepeatedPassword,
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
 
@@ -68,6 +70,7 @@ class RegisterViewModel @Inject constructor(
                         isRegisterSuccessful = true
                     )
                 }
+                registApi(user!!.uid)
             }
             SignInResult(
                 data = user?.run {
@@ -169,6 +172,16 @@ class RegisterViewModel @Inject constructor(
 
             is RegisterFormEvent.Submit -> {
                 submitData()
+            }
+        }
+    }
+
+    fun registApi (id: String) {
+        viewModelScope.launch {
+            try {
+                val response = userRepository.register(id)
+            }catch (e:Exception){
+
             }
         }
     }
